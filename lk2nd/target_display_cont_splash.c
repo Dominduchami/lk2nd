@@ -197,7 +197,7 @@ static bool mdp_read_config(struct fbcon_config *fb)
 		writel(0x0002243F, pipe->base + PIPE_SSPP_SRC_FORMAT);
 		writel(0x00020001, pipe->base + PIPE_SSPP_SRC_UNPACK_PATTERN);
 		writel(stride / (32/8) * (fb->bpp/8), pipe->base + PIPE_SSPP_SRC_YSTRIDE); // the extra math is because we can't use fb->width as the original width calculator is assuming the bpp is 24 when it is 32
-		writel(BIT(3), MDP_CTL_BASE + CTL_FLUSH);
+		writel(BIT(3), MDP_CTL_0_BASE + CTL_FLUSH);
 		stride = readl(pipe->base + PIPE_SSPP_SRC_YSTRIDE);
 		fb->stride = stride / (fb->bpp/8);
 		fb->width = fb->stride;
