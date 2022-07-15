@@ -190,6 +190,20 @@ static bool mdp_read_config(struct fbcon_config *fb)
 	fb->stride = stride / bpp;
 	fb->bpp = bpp * 8;
 
+	#define TARGET_FB_FORMAT 0x0002243F
+
+	if (format != TARGET_FB_FORMAT) {
+		dprintf(CRITICAL, "Changing FB format %#x -> %#x\n", format, TARGET_FB_FORMAT);
+		writel(0x0002243F, pipe->base + PIPE_SSPP_SRC_FORMAT);
+		writel(0x00020001, pipe->base + PIPE_SSPP_SRC_UNPACK_PATTERN);
+		writel(stride / (32/8) * (fb->bpp/8), pipe->base + PIPE_SSPP_SRC_YSTRIDE); // the extra math is because we can't use fb->width as the original width calculator is assuming the bpp is 24 when it is 32
+		writel(BIT(3), MDP_CTL_BASE + CTL_FLUSH);
+		stride = readl(pipe->base + PIPE_SSPP_SRC_YSTRIDE);
+		fb->stride = stride / (fb->bpp/8);
+		fb->width = fb->stride;
+	}
+
+
 	/* Assume the color order is correct, LK does not support others... */
 	if (bpp == 2)
 		fb->format = FB_FORMAT_RGB565;
