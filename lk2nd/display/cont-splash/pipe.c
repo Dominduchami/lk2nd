@@ -68,7 +68,7 @@ static const struct mdp_pipe *mdp_find_pipe(struct fbcon_config *fb)
 
 bool mdp_read_pipe_config(struct fbcon_config *fb)
 {
-	uint32_t src_size, img_size, src_xy, out_size, out_xy, stride, format, bpp;
+	uint32_t src_size, img_size, src_xy, out_size, out_xy, stride, format, bpp, var;
 	const struct mdp_pipe *pipe;
 
 #if MDP4
@@ -88,14 +88,15 @@ bool mdp_read_pipe_config(struct fbcon_config *fb)
 	stride = readl(pipe->base + PIPE_SRC_YSTRIDE);
 	format = readl(pipe->base + PIPE_SRC_FORMAT);
 	bpp = BITS_SHIFT(format, 10, 9) + 1; /* SRC_BPP */
+	var = MDP_CTL_0_BASE + CTL_START;
 
 	dprintf(INFO, "MDP continuous splash detected: pipe %s, base: %p, stride: %d, "
-		"src: %dx%d (%d,%d), img: %dx%d, out: %dx%d (%d,%d), format: %#x (bpp: %d)\n",
-		pipe->name, fb->base, stride,
+		"src: %dx%d (%d,%d), img: %dx%d, out: %dx%d (%d,%d), format: %#x (bpp: %d), mdp_start : %s\n",
+		pipe->name, pipe->base, stride,
 		MDP_X(src_size), MDP_Y(src_size), MDP_X(src_xy), MDP_Y(src_xy),
 		MDP_X(img_size), MDP_Y(img_size),
 		MDP_X(out_size), MDP_Y(out_size), MDP_X(out_xy), MDP_Y(out_xy),
-		format, bpp
+		format, bpp, var
 	);
 
 	fb->width = MDP_X(img_size);

@@ -18,45 +18,29 @@ static void mdp_refresh(void)
 #if MDP3 || MDP4
 	writel(1, MDP_DMA_P_START);
 #elif MDP5
+	writel(1, 0xFD900000);
+#endif
+}
+
+#define MDP_PP_SYNC_CONFIG_VSYNC	0x004
+#define MDP_PP_AUTOREFRESH_CONFIG	0x030
+
+static void mdp5_enable_auto_refresh(struct fbcon_config *fb)
+{
+	uint32_t vsync_count = 19200000 / (fb->height * 60); /* 60 fps */
+	uint32_t mdss_mdp_rev = readl(MDP_HW_REV);
+	uint32_t pp0_base;
+
+	if (mdss_mdp_rev >= MDSS_MDP_HW_REV_105)
+		pp0_base = REG_MDP(0x71000);
+	else if (mdss_mdp_rev >= MDSS_MDP_HW_REV_102)
+		pp0_base = REG_MDP(0x12D00);
+	else
+		pp0_base = REG_MDP(0x21B00);
+
+	writel(vsync_count | BIT(19), pp0_base + MDP_PP_SYNC_CONFIG_VSYNC);
+	writel(BIT(31) | 1, pp0_base + MDP_PP_AUTOREFRESH_CONFIG);
 	writel(1, MDP_CTL_0_BASE + CTL_START);
-#endif
-}
-
-static int mdp_cmd_refresh_loop(void *data)
-{
-	while (true) {
-		/* Limit refresh to 50 Hz to avoid overlapping display updates */
-		event_wait(&refresh_event);
-		mdp_refresh();
-		thread_sleep(20);
-	}
-	return 0;
-}
-
-static void mdp_cmd_signal_refresh(void)
-{
-	event_signal(&refresh_event, false);
-}
-
-static void mdp_cmd_refresh_start(struct fbcon_config *fb)
-{
-#if ENABLE_AUTOREFRESH
-	writel((BIT(31) | 1), MDP_PP_0_BASE + MDSS_MDP_REG_PP_AUTOREFRESH_CONFIG);
-#else
-	thread_t *thr;
-
-	event_init(&refresh_event, false, EVENT_FLAG_AUTOUNSIGNAL);
-
-	thr = thread_create("display-refresh", &mdp_cmd_refresh_loop,
-			    fb, HIGH_PRIORITY, DEFAULT_STACK_SIZE);
-	if (!thr) {
-		dprintf(CRITICAL, "Failed to create display-refresh thread\n");
-		return;
-	}
-
-	thread_resume(thr);
-	fb->update_start = mdp_cmd_signal_refresh;
-#endif
 }
 
 bool mdp_start_refresh(struct fbcon_config *fb)
@@ -93,7 +77,7 @@ bool mdp_start_refresh(struct fbcon_config *fb)
 #endif
 
 	if (cmd_mode && !auto_refresh)
-		mdp_cmd_refresh_start(fb);
+		mdp5_enable_auto_refresh(fb);
 
 	return true;
 }
