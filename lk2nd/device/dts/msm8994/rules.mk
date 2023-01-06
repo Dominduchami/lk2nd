@@ -3,3 +3,4 @@ LOCAL_DIR := $(GET_LOCAL_DIR)
 
 ADTBS += \
 	$(LOCAL_DIR)/msm8992-lg-bullhead.dtb \
+	$(LOCAL_DIR)/msm8994-huawei-angler.dtb \

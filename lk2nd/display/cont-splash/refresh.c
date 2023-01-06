@@ -88,7 +88,7 @@ bool mdp_start_refresh(struct fbcon_config *fb)
 	}
 #endif
 
-	if (cmd_mode && !auto_refresh)
+	if (cmd_mode)
 		mdp_cmd_refresh_start(fb);
 
 	return true;
