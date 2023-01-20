@@ -80,6 +80,26 @@ bool mdp_read_pipe_config(struct fbcon_config *fb)
 	if (!pipe)
 		return false;
 
+	#define TARGET_FB_FORMAT 0x000236FF//0x000237FF
+
+	if (format != TARGET_FB_FORMAT) {
+		dprintf(CRITICAL, "Changing FB format %#x -> %#x\n", format, TARGET_FB_FORMAT);
+		/*writel(0x000237FF, pipe->base + PIPE_SSPP_SRC_FORMAT);
+		writel(0x03020001, pipe->base + PIPE_SSPP_SRC_UNPACK_PATTERN);
+		writel(1440, pipe->base + PIPE_SSPP_SRC_YSTRIDE);
+		writel(BIT(3), MDP_CTL_0_BASE + CTL_FLUSH);*/
+
+		writel(0x000236FF, 0xfd905030);
+  		writel(0x03020001, 0xfd905034);
+  		//writel(1440*3, 0xfd905024);
+
+		writel(BIT(3), 0xfd902018);
+
+		stride = readl(pipe->base + PIPE_SSPP_SRC_YSTRIDE);
+		fb->stride = stride / (fb->bpp/8);
+		fb->width = fb->stride;
+	}
+
 	src_size = readl(pipe->base + PIPE_SRC_SIZE);
 	img_size = readl(pipe->base + PIPE_SRC_IMG_SIZE);
 	src_xy = readl(pipe->base + PIPE_SRC_XY);
@@ -91,18 +111,21 @@ bool mdp_read_pipe_config(struct fbcon_config *fb)
 	var = MDP_CTL_0_BASE + CTL_START;
 
 	dprintf(INFO, "MDP continuous splash detected: pipe %s, base: %p, stride: %d, "
-		"src: %dx%d (%d,%d), img: %dx%d, out: %dx%d (%d,%d), format: %#x (bpp: %d), mdp_start : %s\n",
+		"src: %dx%d (%d,%d), img: %dx%d, out: %dx%d (%d,%d), format: %#x (bpp: %d), mdp_start : %s, ystride = %p, format = %p, unpack_pattern = %p\n, fb-> height = %d, fb->width = %d, MDP_CTL_0_BASE + CTL_FLUSH = %p\n",
 		pipe->name, pipe->base, stride,
 		MDP_X(src_size), MDP_Y(src_size), MDP_X(src_xy), MDP_Y(src_xy),
 		MDP_X(img_size), MDP_Y(img_size),
 		MDP_X(out_size), MDP_Y(out_size), MDP_X(out_xy), MDP_Y(out_xy),
-		format, bpp, var
+		format, bpp, var, pipe->base + PIPE_SRC_YSTRIDE, pipe->base + PIPE_SRC_FORMAT, 
+		pipe->base + PIPE_SSPP_SRC_UNPACK_PATTERN, fb->height, fb->width, MDP_CTL_0_BASE + CTL_FLUSH
 	);
 
 	fb->width = MDP_X(img_size);
 	fb->height = MDP_Y(img_size);
 	fb->stride = stride / bpp;
 	fb->bpp = bpp * 8;
+
+	dprintf(INFO, "fb-> height = %d, fb->width = %d\n", fb->height, fb->width);
 
 	if (bpp == 2)
 		fb->format = FB_FORMAT_RGB565;
