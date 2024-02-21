@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
+/dts-v1/;
+
+#include <skeleton.dtsi>
+#include <lk2nd.h>
+
+/ {
+	qcom,msm-id = <207 0x20000>;
+	qcom,pmic-id = <0x10009 0x1000A 0x0 0x0>;
+	qcom,board-id = <8026 0>;
+	model = "Huawei Nexus 6P";
+	compatible = "huawei,angler", "qcom,msm8994", "lk2nd,device";
+};
