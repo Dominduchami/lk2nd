@@ -1,13 +1,14 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
-INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
+INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared -I$(LK_TOP_DIR)/platform/qsd8k/include
 
 PLATFORM := qsd8k
 
-MEMBASE := 0x00000000 # SMI
+#MEMBASE := 0x00000000 # SMI
+MEMBASE := 0x28000000 # SMI
 MEMSIZE := 0x00100000 # 1MB
 
-BASE_ADDR        := 0x20000000
+BASE_ADDR        := 0x11800000
 
 TAGS_ADDR        := BASE_ADDR+0x00000100
 KERNEL_ADDR      := BASE_ADDR+0x00008000
@@ -16,17 +17,21 @@ SCRATCH_ADDR     := BASE_ADDR+0x04000000
 
 KEYS_USE_GPIO_KEYPAD := 1
 
-DEFINES += DISPLAY_SPLASH_SCREEN=1
+#DEFINES += DISPLAY_SPLASH_SCREEN=1
 DEFINES += DISPLAY_TYPE_LCDC=1
 #DEFINES += TARGET_USES_GIC_VIC=1
 #	lib/ptable 
 #	dev/panel/msm
+
+CFLAGS += -mlittle-endian -mfpu=neon
+LDFLAGS += -EL
 
 MODULES += \
 	dev/keys \
 	dev/ssbi \
 	lib/ptable
 
+#MEMBASE=$(MEMBASE) 
 DEFINES += \
 	SDRAM_SIZE=$(MEMSIZE) \
 	MEMSIZE=$(MEMSIZE) \

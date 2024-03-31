@@ -90,7 +90,9 @@ time_t current_time(void)
 
 static void wait_for_timer_op(void)
 {
+#ifndef PLATFORM_QSD8K
 	while (readl(SPSS_TIMER_STATUS) & SPSS_TIMER_STATUS_DGT_EN) ;
+#endif
 }
 
 void platform_uninit_timer(void)
