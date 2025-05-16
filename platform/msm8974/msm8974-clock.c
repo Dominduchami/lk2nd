@@ -871,7 +871,11 @@ void msm8974_ac_clock_override(void)
 
 void platform_clock_init(void)
 {
-	if (platform_is_8974ac())
+	if (platform_is_8974ac()) {
+		dprintf(CRITICAL, "msm8974_ac_clock_override()\n");
 		msm8974_ac_clock_override();
+	}
 	clk_init(msm_clocks_8974, ARRAY_SIZE(msm_clocks_8974));
+
+	dprintf(CRITICAL, "Clock init done!\n");
 }

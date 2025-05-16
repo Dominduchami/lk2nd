@@ -216,7 +216,11 @@ static void target_mmc_sdhci_init(void)
 	struct mmc_config_data config = {0};
 	uint32_t soc_ver = 0;
 
+	dprintf(CRITICAL, "target_mmc_sdhci_init()\n");
+
 	soc_ver = board_soc_version();
+
+	dprintf(CRITICAL, "soc ver = %d\n", soc_ver);
 
 	/*
 	 * 8974 v1 fluid devices, have a hardware bug
@@ -225,12 +229,17 @@ static void target_mmc_sdhci_init(void)
 	switch(board_hardware_id())
 	{
 		case HW_PLATFORM_FLUID:
-			if (platform_is_8974() && BOARD_SOC_VERSION1(soc_ver))
+			if (platform_is_8974() && BOARD_SOC_VERSION1(soc_ver)) {
+				dprintf(CRITICAL, "Fluid, data bus is 4bit\n");
 				config.bus_width = DATA_BUS_WIDTH_4BIT;
-			else
+			}
+			else {
+				dprintf(CRITICAL, "FLuid, data bus is 8bit\n");
 				config.bus_width = DATA_BUS_WIDTH_8BIT;
+			}
 			break;
 		default:
+			dprintf(CRITICAL, "NOT fluid, data bus is 8BIT\n");
 			config.bus_width = DATA_BUS_WIDTH_8BIT;
 	};
 
@@ -244,9 +253,11 @@ static void target_mmc_sdhci_init(void)
 	 * only for emmc (slot 1)
 	 */
 	if (platform_is_8974ac()) {
+		dprintf(CRITICAL, "Platform is AC\n");
 		config.max_clk_rate = MMC_CLK_192MHZ;
 		config.hs400_support = 1;
 	} else {
+		dprintf(CRITICAL, "Platform not-AC\n");
 		config.max_clk_rate = MMC_CLK_200MHZ;
 	}
 	config.sdhc_base = mmc_sdhci_base[config.slot - 1];
@@ -254,6 +265,7 @@ static void target_mmc_sdhci_init(void)
 	config.pwr_irq     = mmc_sdc_pwrctl_irq[config.slot - 1];
 
 	if (!(dev = mmc_init(&config))) {
+		dprintf(CRITICAL, "EMMC init failed!!!\n");
 		/* Trying Slot 2 next */
 		config.slot = 2;
 		config.max_clk_rate = MMC_CLK_200MHZ;
@@ -262,7 +274,7 @@ static void target_mmc_sdhci_init(void)
 		config.pwr_irq     = mmc_sdc_pwrctl_irq[config.slot - 1];
 
 		if (!(dev = mmc_init(&config))) {
-			dprintf(CRITICAL, "mmc init failed!");
+			dprintf(CRITICAL, "mmc/sd init failed!");
 			ASSERT(0);
 		}
 	}
@@ -337,12 +349,16 @@ void target_mmc_caps(struct mmc_host *host)
 
 void target_init(void)
 {
-	dprintf(INFO, "target_init()\n");
+	dprintf(CRITICAL, "target_init()\n");
 
 	spmi_init(PMIC_ARB_CHANNEL_NUM, PMIC_ARB_OWNER_ID);
 
+	dprintf(CRITICAL, "spmi_init() done\n");
+
 	/* Save PM8941 version info. */
 	pmic_ver = pm8x41_get_pmic_rev();
+
+	dprintf(CRITICAL, "pmic_ver = %d\n", pmic_ver);
 
 	target_keystatus();
 
@@ -353,7 +369,12 @@ void target_init(void)
 	 * Set drive strength & pull ctrl for
 	 * emmc
 	 */
+	dprintf(CRITICAL, "// Start 'emmcdxe' code //\n");
+	dprintf(CRITICAL, "Set emmc drive strength & pull ctrl\n");
+
 	set_sdc_power_ctrl();
+
+	dprintf(CRITICAL, "target_mmc_sdhci_init()\n");
 
 #if MMC_SDHCI_SUPPORT
 	target_mmc_sdhci_init();
@@ -748,13 +769,18 @@ static void set_sdc_power_ctrl(void)
 		case MSM8674AB:
 		case MSM8974AA:
 		case MSM8974AB:
-			if (board_hardware_id() == HW_PLATFORM_MTP)
+			if (board_hardware_id() == HW_PLATFORM_MTP) {
+				dprintf(CRITICAL, "Board id = HW_PLATFORM_MTP, using 10MA\n");
 				tlmm_hdrv_clk = TLMM_CUR_VAL_10MA;
-			else
+			}
+			else {
 				tlmm_hdrv_clk = TLMM_CUR_VAL_16MA;
+				dprintf(CRITICAL, "Board id check, using 16MA\n");
+			}
 			break;
 		default:
 			tlmm_hdrv_clk = TLMM_CUR_VAL_16MA;
+			dprintf(CRITICAL, "Using 16MA\n");
 	};
 
 	/* Drive strength configs for sdc pins */
@@ -779,6 +805,7 @@ static void set_sdc_power_ctrl(void)
 	};
 
 	/* Set the drive strength & pull control values */
+	dprintf(CRITICAL, "Set the drive strength & pull control values\n");
 	tlmm_set_hdrive_ctrl(sdc1_hdrv_cfg, ARRAY_SIZE(sdc1_hdrv_cfg));
 	tlmm_set_pull_ctrl(sdc1_pull_cfg, ARRAY_SIZE(sdc1_pull_cfg));
 
@@ -786,6 +813,7 @@ static void set_sdc_power_ctrl(void)
 	 * only for 8974 pro targets
 	 */
 	if (!platform_is_8974())
+		dprintf(CRITICAL, "Platform_is_8974 returned true\n");
 		tlmm_set_pull_ctrl(sdc1_rclk_cfg, ARRAY_SIZE(sdc1_rclk_cfg));
 }
 
