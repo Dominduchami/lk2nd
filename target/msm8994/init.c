@@ -346,73 +346,10 @@ void target_init(void)
 
 	spmi_init(PMIC_ARB_CHANNEL_NUM, PMIC_ARB_OWNER_ID);
 
-	target_keystatus();
-
-
 	if (target_use_signed_kernel())
 		target_crypto_init_params();
 
 	platform_read_boot_config();
-
-#ifdef MMC_SDHCI_SUPPORT
-	if (platform_boot_dev_isemmc())
-	{
-		target_sdc_init();
-	}
-#endif
-#ifdef UFS_SUPPORT
-	if(!platform_boot_dev_isemmc())
-	{
-		ufs_device.base = UFS_BASE;
-		ufs_init(&ufs_device);
-	}
-#endif
-	/* Storage initialization is complete, read the partition table info */
-	mmc_read_partition_table(0);
-
-#if VERIFIED_BOOT
-	/* Initialize Qseecom */
-	ret = qseecom_init();
-
-	if (ret < 0)
-	{
-		dprintf(CRITICAL, "Failed to initialize qseecom, error: %d\n", ret);
-		ASSERT(0);
-	}
-
-	/* Start Qseecom */
-	ret = qseecom_tz_init();
-
-	if (ret < 0)
-	{
-		dprintf(CRITICAL, "Failed to start qseecom, error: %d\n", ret);
-		ASSERT(0);
-	}
-
-	if (rpmb_init() < 0)
-	{
-		dprintf(CRITICAL, "RPMB init failed\n");
-		ASSERT(0);
-	}
-
-	/*
-	 * Load the sec app for first time
-	 */
-	if (load_sec_app() < 0)
-	{
-		dprintf(CRITICAL, "Failed to load App for verified\n");
-		ASSERT(0);
-	}
-#endif
-
-	rpm_smd_init();
-
-	/* QPNP LED init for boot process notification */
-	if (board_hardware_id() == HW_PLATFORM_LIQUID){
-		pm8x41_wled_config_slave_id(PMIC_LED_SLAVE_ID);
-		qpnp_led_init(QPNP_LED_BLUE, QPNP_LED_CTRL_BASE,
-			QPNP_BLUE_LPG_CTRL_BASE);
-	}
 
 }
 

@@ -1,25 +1,25 @@
 LOCAL_DIR := $(GET_LOCAL_DIR)
 
 INCLUDES += -I$(LOCAL_DIR)/include -I$(LK_TOP_DIR)/platform/msm_shared
-INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
+#INCLUDES += -I$(LK_TOP_DIR)/dev/gcdb/display -I$(LK_TOP_DIR)/dev/gcdb/display/include
 ifeq ($(ENABLE_MDTP_SUPPORT),1)
 INCLUDES += -I$(LK_TOP_DIR)/app/aboot
 endif
 
 PLATFORM := msm8994
 
-MEMBASE := 0x0F900000 # SDRAM
+MEMBASE := 0x00400000 # SDRAM
 MEMSIZE := 0x00200000 # 2MB
 
 BASE_ADDR    := 0x0000000
 
-SCRATCH_ADDR := 0x10100000
+SCRATCH_ADDR := 0x00600000
 
-SCRATCH_SIZE := 0x20000000
+SCRATCH_SIZE := 0x00600000
 
-DEFINES += DISPLAY_SPLASH_SCREEN=1
-DEFINES += DISPLAY_TYPE_MIPI=1
-DEFINES += DISPLAY_TYPE_DSI6G=1
+DEFINES += DISPLAY_SPLASH_SCREEN=0
+DEFINES += DISPLAY_TYPE_MIPI=0
+DEFINES += DISPLAY_TYPE_DSI6G=0
 
 DEFINES += DISPLAY_EN_20NM_PLL_90_PHASE
 
@@ -46,9 +46,9 @@ DEFINES += \
 
 OBJS += \
     $(LOCAL_DIR)/init.o \
-    $(LOCAL_DIR)/meminfo.o \
-    $(LOCAL_DIR)/target_display.o \
-    $(LOCAL_DIR)/oem_panel.o
+    $(LOCAL_DIR)/meminfo.o #\
+    #$(LOCAL_DIR)/target_display.o \
+    #$(LOCAL_DIR)/oem_panel.o
 
 ifeq ($(ENABLE_SMD_SUPPORT),1)
 OBJS += \
