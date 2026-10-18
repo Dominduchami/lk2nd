@@ -1596,6 +1596,9 @@ static uint32_t mmc_card_init(struct mmc_device *dev)
 		}
 	}
 
+	// mmc, block address,len, & flag to set (1) or clear (0)
+	mmc_set_clr_power_on_wp_user(dev, 0, dev->card.wp_grp_size, 0);
+
 	/* Decode and save the CSD register */
 	mmc_return = mmc_decode_and_save_csd(card);
 	if (mmc_return) {

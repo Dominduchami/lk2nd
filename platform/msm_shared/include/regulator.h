@@ -84,4 +84,7 @@
 void regulator_enable(uint32_t enable);
 void regulator_disable(uint32_t enable);
 
+void emmc_regulator_enable();
+void emmc_regulator_disable();
+
 #endif

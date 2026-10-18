@@ -41,4 +41,5 @@ OBJS += \
     $(LOCAL_DIR)/init.o \
     $(LOCAL_DIR)/meminfo.o \
     $(LOCAL_DIR)/target_display.o \
+	$(LOCAL_DIR)/regulator.o \
     $(LOCAL_DIR)/oem_panel.o

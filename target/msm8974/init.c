@@ -54,6 +54,7 @@
 #include <platform/gpio.h>
 #include <stdlib.h>
 #include <lk2nd/device.h>
+#include <regulator.h>
 
 #define HW_PLATFORM_8994_INTERPOSER    0x3
 
@@ -374,6 +375,14 @@ void target_init(void)
 
 	/* Save PM8941 version info. */
 	pmic_ver = pm8x41_get_pmic_rev();
+
+	dprintf(INFO, "emmc_regulator_disable()\n");
+	emmc_regulator_disable();
+
+	mdelay(5000);
+
+	//dprintf(INFO, "emmc_regulator_enable()\n");
+	//emmc_regulator_enable();
 
 	target_keystatus();
 
